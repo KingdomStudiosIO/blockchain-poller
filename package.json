@@ -1,0 +1,24 @@
+{
+  "name": "blockchain-poller",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DefiKingdoms/blockchain-poller.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DefiKingdoms/blockchain-poller/issues"
+  },
+  "homepage": "https://github.com/DefiKingdoms/blockchain-poller#readme",
+  "dependencies": {
+    "@google-cloud/pubsub": "^2.18.3",
+    "log4js": "^6.3.0",
+    "web3": "^1.6.1"
+  }
+}
