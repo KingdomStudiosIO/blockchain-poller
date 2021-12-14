@@ -22,7 +22,8 @@ class Server {
         if(fs.existsSync(this.stateFilePath))
             this.state = require(this.stateFilePath)
 
-        this.state["nextBlock"] = this.state["nextBlock"] || 0
+        this.state["nextBlock"] = this.state["nextBlock"] || this.config.firstBlockToProcess || 0
+        this.lastBlockToProcess = this.config.lastBlockToProcess || Infinity
 
         this.headOfChainBlockNumber = 0
         this.exit = false
@@ -39,7 +40,6 @@ class Server {
 
         const startBlock = this.state["nextBlock"] || this.indexer.firstRelevantBlock()
 
-
         this.web3 = this.connectWeb3()
 
         this.web3.eth.getBlockNumber()
@@ -49,9 +49,14 @@ class Server {
     }
 
     async fetchNextBlockWrapper(blockNumber) {
+        if(blockNumber > this.lastBlockToProcess) {
+            this.exit = true
+            this.logger.info(`We've passed lastBlockToProcess (${this.lastBlockToProcess}), so we're done`)
+        }
+
         if (this.exit) {
             this.logger.info(`Exiting..`)
-            return
+            process.exit()
         }
 
         if(this.failcount > 0) {
