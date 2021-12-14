@@ -54,24 +54,19 @@ class Server {
             return
         }
 
+        if(this.failcount > 0) {
+            // TODO Is this a memory leak?
+            // Seems there isn't a web3.disconnect(), so we'll just overwrite the object
+            this.web3 = this.connectWeb3()
+        }
+
         let nextBlockNumber = blockNumber
         try {
             nextBlockNumber = await this.fetchNextBlock(blockNumber)
             this.failcount = 0
         } catch (err) {
-            this.logger.error("Got exception while fetching next block, attempting to reconnect web3 endpoint " + err)
+            this.logger.error("Got exception while fetching next block, going to attempt to reconnect web3 endpoint " + err)
             this.failcount++
-
-            if(this.failcount > 10) {
-                this.logger.error(`Failcount reached ${this.failcount}, exiting`)
-                this.exit = true
-                return
-            }
-
-            // Seems there isn't a web3.disconnect(), so we'll just overwrite the object
-            // TODO Is this a memory leak?
-
-            this.web3 = this.connectWeb3()
         }
 
         // Save state if changed
@@ -81,6 +76,12 @@ class Server {
         let timeout = this.pollInterval
         if(nextBlockNumber < this.headOfChainBlockNumber)
             timeout = 0
+
+        // If failing we're gonna wait two seconds longer per retry, up to max 1 min
+        if(this.failcount > 0) {
+            timeout = Math.max(this.failcount * 2000, 60000)
+            this.logger.error(`Fail count is ${this.failcount}, waiting ${timeout/1000} seconds before trying to reconnect`)
+        }
 
         setTimeout(async () => this.fetchNextBlockWrapper(nextBlockNumber),
             timeout)
