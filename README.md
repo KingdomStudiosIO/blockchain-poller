@@ -22,14 +22,15 @@ transactions to.
 Example config:
 ```json
 {
+  "firstBlockToProcess": 19000000,
+  "lastBlockToProcess": 19000010,
   "websocketEndpoint": "wss://ws.s0.t.hmny.io/",
   "pollInterval": 1000,
-  "stateFilename": "./state.json",
   "contracts": [
     {
-      "address": "0x5100bd31b822371108a0f63dcfb6594b9919eaf4",
-      "pubSubTopic": "yourTopic",
-      "firstBlock": 19875503
+      "address": "0xabD4741948374b1f5DD5Dd7599AC1f85A34cAcDD",
+      "pubSubTopic": "projects/YOUR_PROJECT/topics/YOUR_TOPIC",
+      "firstBlock": 16339595
     }
   ]
 }
@@ -37,6 +38,3 @@ Example config:
 
 Provide credentials for PubSub through the `GOOGLE_APPLICATION_CREDENTIALS` environment variable as described 
 [here](https://cloud.google.com/pubsub/docs/reference/libraries#client-libraries-install-nodejs).
-
-### Future plans
-Let third parties/the Community subscribe to PubSub topics, closing the gap between the blockchain and web2 tools.
