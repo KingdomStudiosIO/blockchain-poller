@@ -84,7 +84,7 @@ class Server {
 
         // If failing we're gonna wait two seconds longer per retry, up to max 1 min
         if(this.failcount > 0) {
-            timeout = Math.max(this.failcount * 2000, 60000)
+            timeout = Math.min(this.failcount * 2000, 60000)
             this.logger.error(`Fail count is ${this.failcount}, waiting ${timeout/1000} seconds before trying to reconnect`)
         }
 
