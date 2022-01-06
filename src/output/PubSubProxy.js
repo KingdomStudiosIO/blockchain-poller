@@ -15,7 +15,7 @@ class PubSubProxy {
 
         this.topic.publishJSON(message)
             .then(
-                id => this.logger.info(`Message sent with id ${id}`),
+                id => this.logger.info(`Transaction ${message.hash} sent with id ${id}`),
                 rejected => this.logger.error(`Message rejected ${rejected}`)
             )
             .catch(err => this.logger.error(err))

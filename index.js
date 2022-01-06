@@ -21,6 +21,16 @@ const argv = yargs
         description: "Path to state file",
         type: "string"
     })
+    .option("firstBlock", {
+        alias: "f",
+        description: "Begin processing at block number",
+        type: "integer"
+    })
+    .option("untilBlock", {
+        alias: "u",
+        description: "Process blocks until block number (but not including)",
+        type: "integer"
+    })
     .demandOption(["config", "state"], "Please provide both config and state files")
     .help()
     .alias("help", "h")
@@ -33,5 +43,8 @@ const path = require("path");
 const { Server } = require("./src/Server")
 config.stateFilenameAbsPath = path.resolve(argv.state)
 
+config.firstBlock = argv.firstBlock
+config.untilBlock = argv.untilBlock
+
 const server = new Server(config)
-server.start(19972276)
+server.start()

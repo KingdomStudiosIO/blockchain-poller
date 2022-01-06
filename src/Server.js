@@ -2,7 +2,6 @@ const log4js = require("log4js");
 
 const Web3 = require("web3");
 const {Indexer} = require("./indexer/Indexer")
-const {Contract} = require("./contract/Contract")
 const fs = require("fs");
 
 let blockCounter = 0
@@ -22,23 +21,21 @@ class Server {
         if(fs.existsSync(this.stateFilePath))
             this.state = require(this.stateFilePath)
 
-        this.state["nextBlock"] = this.state["nextBlock"] || this.config.firstBlockToProcess || 0
-        this.lastBlockToProcess = this.config.lastBlockToProcess || Infinity
+        this.state["nextBlock"] = this.state["nextBlock"] || this.config.firstBlock || 0
+        this.lastBlockToProcess = Infinity
+        if(!isNaN(config.untilBlock)) {
+            this.lastBlockToProcess = config.untilBlock - 1
+        }
 
         this.headOfChainBlockNumber = 0
         this.exit = false
         this.failcount = 0
 
-        this.indexer = new Indexer()
+        this.indexer = new Indexer(config.pubSubTopic)
     }
 
     start() {
-        for(let contractConfig of this.config.contracts) {
-            const contract = new Contract(contractConfig.address, contractConfig.pubSubTopic, contractConfig.firstBlock)
-            this.indexer.registerContract(contract)
-        }
-
-        const startBlock = this.state["nextBlock"] || this.indexer.firstRelevantBlock()
+        const startBlock = this.state["nextBlock"]
 
         this.web3 = this.connectWeb3()
 
@@ -129,6 +126,7 @@ class Server {
     processBlock(block) {
         let processedTransactions = 0
         for (let transaction of block.transactions) {
+            this.logger.info(`transaction ${transaction.hash} to ${transaction.to} from ${transaction.from}`)
             if (this.indexer.processTransaction(transaction))
                 processedTransactions++
         }
