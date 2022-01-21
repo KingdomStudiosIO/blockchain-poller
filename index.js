@@ -31,6 +31,11 @@ const argv = yargs
         description: "Process blocks until block number (but not including)",
         type: "integer"
     })
+    .option("debug", {
+        alias: "d",
+        description: "Print debug information about transactions",
+        type: "boolean"
+    })
     .demandOption(["config", "state"], "Please provide both config and state files")
     .help()
     .alias("help", "h")
@@ -45,6 +50,7 @@ config.stateFilenameAbsPath = path.resolve(argv.state)
 
 config.firstBlock = argv.firstBlock
 config.untilBlock = argv.untilBlock
+config.debug = argv.debug || false
 
 const server = new Server(config)
 server.start()
