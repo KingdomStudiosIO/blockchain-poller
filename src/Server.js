@@ -52,7 +52,8 @@ class Server {
         }
 
         if (this.exit) {
-            this.logger.info(`Exiting..`)
+            this.logger.info(`Waiting 5 s for pubsub to finish then exiting..`)
+            await new Promise(resolve => setTimeout(resolve, 5000));
             process.exit()
         }
 
