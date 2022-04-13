@@ -175,7 +175,14 @@ class Server {
             }
         }
 
-        return new Web3(new Web3.providers.WebsocketProvider(this.config.websocketEndpoint, options))
+        let provider
+        if(this.config.rpcEndpoint.startsWith("wss")) {
+            provider = new Web3.providers.WebsocketProvider(this.config.rpcEndpoint, options)
+        } else {
+            provider = new Web3.providers.HttpProvider(this.config.rpcEndpoint, options)
+        }
+
+        return new Web3(provider)
     }
 }
 
