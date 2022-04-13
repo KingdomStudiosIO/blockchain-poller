@@ -18,7 +18,7 @@
   "homepage": "https://github.com/DefiKingdoms/blockchain-poller#readme",
   "dependencies": {
     "@google-cloud/pubsub": "^2.18.3",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.4",
     "web3": "^1.6.1",
     "yargs": "^17.3.0"
   }
