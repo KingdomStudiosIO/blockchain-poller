@@ -1,24 +1,11 @@
 const log4js = require("log4js");
-log4js.configure({
-    appenders: {
-        out: { type: 'stdout' },
-        default: {type: "file", filename: "default.log"},
-
-    },
-    categories: {default: {appenders: ["out","default"], level: "info"}}
-});
-
 const yargs = require("yargs");
+const { Server } = require("./src/Server")
 
 const argv = yargs
-    .option("config", {
+    .option("configName", {
         alias: "c",
-        description: "Path to config file",
-        type: "string"
-    })
-    .option("state", {
-        alias: "s",
-        description: "Path to state file",
+        description: "Which config to use, ex: harmony-mainnet",
         type: "string"
     })
     .option("firstBlock", {
@@ -36,17 +23,37 @@ const argv = yargs
         description: "Print debug information about transactions",
         type: "boolean"
     })
-    .demandOption(["config", "state"], "Please provide both config and state files")
+    .demandOption(["configName"], "Please provide config name")
     .help()
     .alias("help", "h")
     .argv
 
+const configName = argv.configName
+const logFile = `logs/${configName}.log`
 
-const config = require(argv.config)
+log4js.configure({
+    appenders: {
+        out: { type: 'stdout' },
+        default: {
+            type: "dateFile",
+            filename: logFile,
+            pattern: 'yyyy-MM-dd',
+            numBackups: 60,
+            compress: true,
+        }
+
+    },
+    categories: {default: {appenders: ["out","default"], level: "info"}}
+});
+
+const configFile = `./${configName}-config.json`
+const stateFile = `state/${configName}-state.json`
+
+
+const config = require(configFile)
 const path = require("path");
 
-const { Server } = require("./src/Server")
-config.stateFilenameAbsPath = path.resolve(argv.state)
+config.stateFilenameAbsPath = path.resolve(stateFile)
 
 config.firstBlock = argv.firstBlock
 config.untilBlock = argv.untilBlock

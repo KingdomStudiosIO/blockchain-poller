@@ -1,0 +1,32 @@
+{
+  "websocketEndpoint": "wss://ws.s0.t.hmny.io/",
+  "pollInterval": 250,
+  "pubSubTopic": "projects/defi-kingdoms-api/topics/harmony-mainnet",
+  "contracts": [
+    {
+      "name": "Profiles",
+      "address": "0xabd4741948374b1f5dd5dd7599ac1f85a34cacdd",
+      "firstBlock": 16339595
+    },
+    {
+      "name": "Hero core contract",
+      "address": "0x5f753dcdf9b1ad9aabc1346614d1f4746fd6ce5c",
+      "firstBlock": 17619152
+    },
+    {
+      "name": "Quest contract",
+      "address": "0x5100bd31b822371108a0f63dcfb6594b9919eaf4",
+      "firstBlock": 19875503
+    },
+    {
+      "name": "Summon contract",
+      "address": "0x65dea93f7b886c33a78c10343267dd39727778c2",
+      "firstBlock": 18597665
+    },
+    {
+      "name": "Sale contract?",
+      "address": "0x13a65b9f8039e2c032bc022171dc05b30c3f2892",
+      "firstBlock": 18597670
+    }
+  ]
+}
