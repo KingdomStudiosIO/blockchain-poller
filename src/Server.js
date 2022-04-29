@@ -127,7 +127,8 @@ class Server {
     processBlock(block) {
         let processedTransactions = 0
         for (let transaction of block.transactions) {
-            this.logger.info(`transaction ${transaction.hash} to ${transaction.to} from ${transaction.from}`)
+            transaction.timestamp = block.timestamp
+            this.logger.info(`at ${transaction.timestamp} transaction ${transaction.hash} to ${transaction.to} from ${transaction.from}`)
 
             if(this.config.debug) {
                 this.logger.info(transaction)
