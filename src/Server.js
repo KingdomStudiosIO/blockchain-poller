@@ -68,8 +68,13 @@ class Server {
             nextBlockNumber = await this.fetchNextBlock(blockNumber)
             this.failcount = 0
         } catch (err) {
-            this.logger.error("Got exception while fetching next block, going to attempt to reconnect web3 endpoint " + err)
-            this.failcount++
+            if (err.message.endsWith("cannot query unfinalized data")) {
+                this.logger.warn("At end of DFK blockchain, setting failcount 1 to sleep a little while")
+                this.failcount = 1
+            } else {
+                this.logger.error("Got exception while fetching next block, going to attempt to reconnect web3 endpoint " + err)
+                this.failcount++
+            }
         }
 
         // Save state if changed
@@ -82,7 +87,7 @@ class Server {
 
         // If failing we're gonna wait two seconds longer per retry, up to max 1 min
         if(this.failcount > 0) {
-            timeout = Math.min(this.failcount * 2000, 60000)
+            timeout = Math.min(this.failcount * 1000, 60000)
             this.logger.error(`Fail count is ${this.failcount}, waiting ${timeout/1000} seconds before trying to reconnect`)
         }
 
