@@ -1,5 +1,5 @@
 {
-  "rpcEndpoint": "wss://subnets.avax.network/defi-kingdoms/dfk-chain/rpc",
+  "rpcEndpoint": "https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc",
   "pollInterval": 250,
   "pubSubTopic": "projects/defi-kingdoms-api/topics/dfkchain-mainnet"
 }

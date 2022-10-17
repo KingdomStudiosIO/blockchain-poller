@@ -1,5 +1,5 @@
 {
-  "rpcEndpoint": "wss://ws.s0.t.hmny.io/",
+  "rpcEndpoint": "https://api.harmony.one",
   "pollInterval": 250,
   "pubSubTopic": "projects/defi-kingdoms-api/topics/harmony-mainnet"
 }
