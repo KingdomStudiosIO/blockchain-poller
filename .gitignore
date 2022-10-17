@@ -2,3 +2,5 @@
 node_modules
 state.json
 config.json
+logs/
+state/
