@@ -31,6 +31,11 @@ class Server {
         this.exit = false
         this.failcount = 0
 
+        this.statsSuccesses = [1]
+        this.statsFailures = [0]
+        this.statsCurrentHourStamp = new Date().toISOString().substring(0,13)
+        this.statsFrequence = 10
+
         this.indexer = new Indexer(config.pubSubTopic)
     }
 
@@ -67,6 +72,7 @@ class Server {
         try {
             nextBlockNumber = await this.fetchNextBlock(blockNumber)
             this.failcount = 0
+            this.countSuccess()
         } catch (err) {
             if (err.message.endsWith("cannot query unfinalized data")) {
                 this.logger.warn("At end of DFK blockchain, setting failcount 1 to sleep a little while")
@@ -74,6 +80,7 @@ class Server {
             } else {
                 this.logger.error("Got exception while fetching next block, going to attempt to reconnect web3 endpoint " + err)
                 this.failcount++
+                this.countError()
             }
         }
 
@@ -120,8 +127,10 @@ class Server {
             totalTransactionCount += transactionCount
             totalUncleCount += uncleTransactionCount
 
-            this.logger.info(`Processed block ${blockNumber} in ${spentMs} ms with ${transactionCount} transactions and ${uncleTransactionCount} uncle transactions`)
-            this.logger.info(`${(totalSpentMs / blockCounter).toFixed(0)} ms avg over ${blockCounter} blocks with ${totalTransactionCount} transactions and ${totalUncleCount} uncle transactions` )
+            if ((blockNumber % 30) === 0) {
+                this.logger.info(`Processed block ${blockNumber} in ${spentMs} ms with ${transactionCount} transactions and ${uncleTransactionCount} uncle transactions`)
+                this.logger.info(`${(totalSpentMs / blockCounter).toFixed(0)} ms avg over ${blockCounter} blocks with ${totalTransactionCount} transactions and ${totalUncleCount} uncle transactions`)
+            }
 
             nextBlockNumber++
         }
@@ -130,6 +139,7 @@ class Server {
     }
 
     processBlock(block) {
+        return
         let processedTransactions = 0
         for (let transaction of block.transactions) {
             transaction.timestamp = block.timestamp
@@ -189,6 +199,47 @@ class Server {
         }
 
         return new Web3(provider)
+    }
+
+    countSuccess() {
+        this.statsSuccesses[0]++
+
+        if((this.statsSuccesses[0] % this.statsFrequence) === 0) {
+            this.updateStats()
+        }
+    }
+
+    countError() {
+        this.statsFailures[0]++
+
+        if((this.statsFailures[0] % this.statsFrequence) === 0) {
+            this.updateStats()
+        }
+    }
+
+    updateStats() {
+        let success = 0
+        let failure = 0
+
+        for(let i = 0;i<this.statsSuccesses.length;i++) {
+            success += this.statsSuccesses[i]
+            failure += this.statsFailures[i]
+        }
+
+        this.logger.info(`Error rate last ${this.statsSuccesses.length} hours: ${((failure / success) * 100).toFixed(3)}% Success: ${success} Failure: ${failure}`)
+
+        const currentHourStamp = new Date().toISOString().substring(0,13)
+
+        if(this.statsCurrentHourStamp !== currentHourStamp) {
+            this.logger.info(`Current hour: ${currentHourStamp} Was: ${this.statsCurrentHourStamp} Hours seen: ${this.statsSuccesses.length}`)
+            this.statsCurrentHourStamp = currentHourStamp
+
+            this.statsSuccesses = this.statsSuccesses.slice(0,11)
+            this.statsFailures = this.statsFailures.slice(0,11)
+
+            this.statsSuccesses.unshift(0)
+            this.statsFailures.unshift(0)
+        }
     }
 }
 
