@@ -139,7 +139,6 @@ class Server {
     }
 
     processBlock(block) {
-        return
         let processedTransactions = 0
         for (let transaction of block.transactions) {
             transaction.timestamp = block.timestamp

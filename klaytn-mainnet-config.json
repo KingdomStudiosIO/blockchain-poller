@@ -1,0 +1,5 @@
+{
+  "rpcEndpoint": "https://dfk_rpc.liquify.com/klaytn_api=191152627",
+  "pollInterval": 250,
+  "pubSubTopic": "projects/defi-kingdoms-api/topics/klaytn-mainnet"
+}
