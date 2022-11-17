@@ -4,3 +4,4 @@ state.json
 config.json
 logs/
 state/
+*.log
