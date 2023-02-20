@@ -142,7 +142,7 @@ class Server {
         let processedTransactions = 0
         for (let transaction of block.transactions) {
             transaction.timestamp = block.timestamp
-            this.logger.info(`at ${transaction.timestamp} transaction ${transaction.hash} to ${transaction.to} from ${transaction.from}`)
+            // this.logger.info(`at ${transaction.timestamp} transaction ${transaction.hash} to ${transaction.to} from ${transaction.from}`)
 
             if(this.config.debug) {
                 this.logger.info(transaction)

@@ -30,6 +30,9 @@ const argv = yargs
 
 const configName = argv.configName
 const logFile = `logs/${configName}.log`
+const configFile = `./${configName}-config.json`
+const stateFile = `state/${configName}-state.json`
+const config = require(configFile)
 
 log4js.configure({
     appenders: {
@@ -38,7 +41,7 @@ log4js.configure({
             type: "dateFile",
             filename: logFile,
             pattern: 'yyyy-MM-dd',
-            numBackups: 60,
+            numBackups: config.numLogBackups || 30,
             compress: true,
         }
 
@@ -46,11 +49,6 @@ log4js.configure({
     categories: {default: {appenders: ["out","default"], level: "info"}}
 });
 
-const configFile = `./${configName}-config.json`
-const stateFile = `state/${configName}-state.json`
-
-
-const config = require(configFile)
 const path = require("path");
 
 config.stateFilenameAbsPath = path.resolve(stateFile)
