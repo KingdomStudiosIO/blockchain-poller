@@ -1,7 +1,7 @@
 .idea
 node_modules
-state.json
-config.json
-logs/
-state/
-*.log
+config/*
+!config/.gitkeep
+state/*
+!state/.gitkeep
+
