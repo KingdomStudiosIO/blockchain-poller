@@ -10,6 +10,10 @@ let totalTransactionCount = 0
 let totalUncleCount = 0
 
 class Server {
+    fetchNextBlockWrapperTimer = null
+    shutdownInProgress = false
+    runningProcesses = 0
+
     constructor(config) {
         this.logger = log4js.getLogger("Server")
 
@@ -51,55 +55,68 @@ class Server {
     }
 
     async fetchNextBlockWrapper(blockNumber) {
-        if(blockNumber > this.lastBlockToProcess) {
-            this.exit = true
-            this.logger.info(`We've passed lastBlockToProcess (${this.lastBlockToProcess}), so we're done`)
-        }
-
-        if (this.exit) {
-            this.logger.info(`Waiting 5 s for pubsub to finish then exiting..`)
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            process.exit()
-        }
-
-        if(this.failcount > 0) {
-            // TODO Is this a memory leak?
-            // Seems there isn't a web3.disconnect(), so we'll just overwrite the object
-            this.web3 = this.connectWeb3()
-        }
-
+        this.runningProcesses++
         let nextBlockNumber = blockNumber
-        try {
-            nextBlockNumber = await this.fetchNextBlock(blockNumber)
-            this.failcount = 0
-            this.countSuccess()
-        } catch (err) {
-            if (err.message.endsWith("cannot query unfinalized data")) {
-                this.logger.warn("At end of DFK blockchain, setting failcount 1 to sleep a little while")
-                this.failcount = 1
-            } else {
-                this.logger.error("Got exception while fetching next block, going to attempt to reconnect web3 endpoint " + err)
-                this.failcount++
-                this.countError()
-            }
-        }
-
-        // Save state if changed
-        if(nextBlockNumber > blockNumber)
-            this.updateState(nextBlockNumber)
-
         let timeout = this.pollInterval
-        if(nextBlockNumber < this.headOfChainBlockNumber)
-            timeout = 0
 
-        // If failing we're gonna wait two seconds longer per retry, up to max 1 min
-        if(this.failcount > 0) {
-            timeout = Math.min(this.failcount * 1000, 60000)
-            this.logger.error(`Fail count is ${this.failcount}, waiting ${timeout/1000} seconds before trying to reconnect`)
+        try {
+            if (blockNumber > this.lastBlockToProcess) {
+                this.exit = true
+                this.logger.info(`We've passed lastBlockToProcess (${this.lastBlockToProcess}), so we're done`)
+            }
+
+            if (this.exit) {
+                this.logger.info(`Waiting 5 s for pubsub to finish then exiting..`)
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                process.exit()
+            }
+
+            if (this.failcount > 0) {
+                // TODO Is this a memory leak?
+                // Seems there isn't a web3.disconnect(), so we'll just overwrite the object
+                this.web3 = this.connectWeb3()
+            }
+
+
+            try {
+                nextBlockNumber = await this.fetchNextBlock(blockNumber)
+                this.failcount = 0
+                this.countSuccess()
+            } catch (err) {
+                if (err.message.endsWith("cannot query unfinalized data")) {
+                    // this.logger.warn("At end of DFK blockchain, setting failcount 1 to sleep a little while")
+                    this.failcount = 1
+                } else {
+                    this.logger.error("Got exception while fetching next block, going to attempt to reconnect web3 endpoint " + err)
+                    this.failcount++
+                    this.countError()
+                }
+            }
+
+            // Save state if changed
+            if (nextBlockNumber > blockNumber)
+                this.updateState(nextBlockNumber)
+
+            if (nextBlockNumber < this.headOfChainBlockNumber)
+                timeout = 0
+
+            // If failing we're gonna wait 1 second longer per retry, up to max 1 min
+            if (this.failcount > 0) {
+                timeout = Math.min(this.failcount * 1000, 60000)
+                if(this.failcount > 1) {
+                    this.logger.error(`Fail count is ${this.failcount}, waiting ${(timeout / 1000).toFixed(2)} seconds before trying to reconnect`)
+                }
+            }
+        } catch (e) {
+            this.logger.error(`Got exception in fetchNextBlockWrapper: ${e}`)
+        } finally {
+            if (!this.shutdownInProgress) {
+                this.fetchNextBlockWrapperTimer = setTimeout(async () => this.fetchNextBlockWrapper(nextBlockNumber),
+                  timeout)
+            }
+
+            this.runningProcesses--
         }
-
-        setTimeout(async () => this.fetchNextBlockWrapper(nextBlockNumber),
-            timeout)
     }
 
     async fetchNextBlock(blockNumber) {
@@ -239,6 +256,25 @@ class Server {
             this.statsSuccesses.unshift(0)
             this.statsFailures.unshift(0)
         }
+    }
+
+    async shutdown() {
+        this.logger.info("Initiating shutdown sequence")
+        this.shutdownInProgress = true
+
+        if(this.fetchNextBlockWrapperTimer) {
+            clearTimeout(this.fetchNextBlockWrapperTimer)
+        }
+
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                this.logger.info(`Running processes: ${this.runningProcesses}`)
+                if (this.runningProcesses === 0) {
+                    clearInterval(checkInterval)
+                    resolve()
+                }
+            }, 1000)
+        })
     }
 }
 

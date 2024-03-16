@@ -1,5 +1,0 @@
-{
-  "rpcEndpoint": "https://subnets.avax.network/defi-kingdoms/dfk-chain-testnet/rpc",
-  "pollInterval": 250,
-  "pubSubTopic": "projects/dfktest-1d7ce/topics/dfkchain-testnet"
-}
