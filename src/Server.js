@@ -38,7 +38,7 @@ class Server {
         this.statsSuccesses = [1]
         this.statsFailures = [0]
         this.statsCurrentHourStamp = new Date().toISOString().substring(0,13)
-        this.statsFrequence = 10
+        this.statsFrequence = 100
 
         this.indexer = new Indexer(config.pubSubTopic)
     }
