@@ -59,7 +59,7 @@ logger.info(`Using state file ${config.stateFilenameAbsPath}`)
 
 config.firstBlock = argv.firstBlock
 config.untilBlock = argv.untilBlock
-config.debug = argv.debug || false
+config.debug = config.debug || argv.debug || false
 
 const server = new Server(config)
 server.start()
