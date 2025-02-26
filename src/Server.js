@@ -162,7 +162,7 @@ class Server {
             // this.logger.info(`at ${transaction.timestamp} transaction ${transaction.hash} to ${transaction.to} from ${transaction.from}`)
 
             if(this.config.debug) {
-                this.logger.info(transaction)
+                this.logger.info(JSON.stringify(transaction))
             }
 
             if (this.indexer.processTransaction(transaction))
