@@ -1,13 +1,9 @@
-const log4js = require("log4js");
-const yargs = require("yargs");
+const fs = require("fs")
+const log4js = require("log4js")
+const yargs = require("yargs")
 const { Server } = require("./src/Server")
 
 const argv = yargs
-    .option("configName", {
-        alias: "c",
-        description: "Which config to use, ex: harmony-mainnet",
-        type: "string"
-    })
     .option("firstBlock", {
         alias: "f",
         description: "Begin processing at block number",
@@ -23,39 +19,63 @@ const argv = yargs
         description: "Print debug information about transactions",
         type: "boolean"
     })
-    .demandOption(["configName"], "Please provide config name")
     .help()
     .alias("help", "h")
     .argv
 
-const configName = argv.configName
-const logFile = `logs/${configName}.log`
-const configFile = `./${configName}-config.json`
-const stateFile = `state/${configName}-state.json`
-const config = require(configFile)
+const configName = process.env.BLOCKCHAIN_POLLER_CONFIG
+const configFile = `./config/${configName}.json`
+
+if (!fs.existsSync(configFile)) {
+    throw new Error(`Missing config file ${configFile} for config name ${configName}`)
+}
+
+const config = JSON.parse(fs.readFileSync(configFile, "utf8"))
+
+const stateFile = `state/${configName}.json`
 
 log4js.configure({
     appenders: {
-        out: { type: 'stdout' },
-        default: {
-            type: "dateFile",
-            filename: logFile,
-            pattern: 'yyyy-MM-dd',
-            numBackups: config.numLogBackups || 30,
-            compress: true,
+        out: {
+            type: "stdout",
+            layout: {
+                type: "pattern",
+                pattern: "[%d] [%p] %c - %x{server} %x{config}: %m",
+                tokens: {
+                    config: () => configName,
+                    server: () => config.serverName,
+                },
+            },
         }
-
     },
-    categories: {default: {appenders: ["out","default"], level: "info"}}
-});
+    categories: {default: {appenders: ["out"], level: "info"}},
+})
+const logger = log4js.getLogger("Main")
 
 const path = require("path");
 
 config.stateFilenameAbsPath = path.resolve(stateFile)
+logger.info(`Using state file ${config.stateFilenameAbsPath}`)
 
 config.firstBlock = argv.firstBlock
 config.untilBlock = argv.untilBlock
-config.debug = argv.debug || false
+config.debug = config.debug || argv.debug || false
 
 const server = new Server(config)
 server.start()
+
+async function shutdown() {
+
+    process.exit()
+}
+
+process.on("SIGINT", async function() {
+    logger.warn("Caught interrupt signal, starting shutdown sequence")
+
+    await shutdown()
+})
+process.on("SIGTERM", async function() {
+    logger.warn("Caught termination signal, starting shutdown sequence")
+
+    await shutdown()
+})

@@ -1,5 +1,0 @@
-{
-  "rpcEndpoint": "https://api.baobab.klaytn.net:8651",
-  "pollInterval": 250,
-  "pubSubTopic": "projects/dfktest-1d7ce/topics/klaytn-testnet"
-}

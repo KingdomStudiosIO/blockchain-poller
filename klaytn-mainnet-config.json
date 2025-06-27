@@ -1,5 +1,0 @@
-{
-  "rpcEndpoint": "https://klaytn.rpc.defikingdoms.com/",
-  "pollInterval": 250,
-  "pubSubTopic": "projects/defi-kingdoms-api/topics/klaytn-mainnet"
-}
