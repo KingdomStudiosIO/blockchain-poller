@@ -40,7 +40,7 @@ class Server {
         this.statsCurrentHourStamp = new Date().toISOString().substring(0,13)
         this.statsFrequence = 100
 
-        this.indexer = new Indexer(config.pubSubTopic)
+        this.indexer = new Indexer(config.pubSubTopic, config.delayMs || 0)
     }
 
     start() {
