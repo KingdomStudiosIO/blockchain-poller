@@ -2,9 +2,9 @@ const log4js = require("log4js");
 const {PubSubProxy} = require("../output/PubSubProxy");
 
 class Indexer {
-    constructor(pubSubTopic) {
+    constructor(pubSubTopic, delayMs) {
         this.logger = log4js.getLogger(`Indexer`)
-        this.pubsubproxy = new PubSubProxy(pubSubTopic)
+        this.pubsubproxy = new PubSubProxy(pubSubTopic, delayMs)
     }
 
     processTransaction(transaction) {
